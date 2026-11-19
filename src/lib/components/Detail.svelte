@@ -173,14 +173,14 @@
       'poster head'
       'poster body';
     gap: 0 18px;
-    max-width: 640px; /* as in cine-stats */
+    max-width: 640px; /* as in film-diary */
     width: 100%;
     background: linear-gradient(180deg, var(--card), var(--bg2));
     border: 1px solid #3b4a8f;
     border-radius: 16px;
     padding: 18px;
   }
-  /* phones: one column, as in cine-stats: the poster, then the heading, then the details */
+  /* phones: one column, as in film-diary: the poster, then the heading, then the details */
   @media (max-width: 520px) {
     .dlg {
       grid-template-columns: 1fr;

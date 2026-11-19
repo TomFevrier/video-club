@@ -47,7 +47,7 @@ const saveCache = () => {
 };
 const fresh = (e, days) => e && Date.now() - e.at < days * DAY;
 // v2: posters per page language, and the film's TMDb collection (for the sagas)
-// v3: the film's posters (language, rating), picked from when assembling, as in cine-stats
+// v3: the film's posters (language, rating), picked from when assembling, as in film-diary
 const CACHE_VERSION = 3;
 
 let tmdbFailures = 0;

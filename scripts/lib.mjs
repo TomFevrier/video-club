@@ -168,7 +168,7 @@ export function groupFilms(rows, { config, picks = {} }) {
 }
 
 /**
- * Poster of a film for a page language (`lang`, "en" or "fr"). Same rule in cine-stats and video-club:
+ * Poster of a film for a page language (`lang`, "en" or "fr"). Same rule in film-diary and video-club:
  *   English page: an English-language poster whenever TMDb has one, then the original language, then French.
  *   French page:  policy "original": English and French films keep their original poster, the others get the French
  *                 one (then English, then the original language). Policy "always-original": the original language first.
