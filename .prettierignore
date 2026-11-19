@@ -1,0 +1,11 @@
+node_modules
+build
+.svelte-kit
+.cache
+pnpm-lock.yaml
+src/lib/data/movies.json
+src/lib/data/flags.json
+src/lib/data/og.json
+data/
+static/
+previews/

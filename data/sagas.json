@@ -1,0 +1,11 @@
+{
+  "_": "The saga filter lists TMDb collections (themoviedb.org/collection/…) with at least 2 films in the catalogue: nothing to do for those. This file covers the rest. 'sagas': series TMDb doesn't group, by TMDb film ids (a film here leaves its TMDb collection). 'names': rename a TMDb collection, by collection id. 'exclude': collection ids to leave out. Every build logs the sagas it found.",
+  "sagas": [
+    {
+      "name": { "en": "Vengeance Trilogy", "fr": "Trilogie de la vengeance" },
+      "films": [4689, 670, 4550]
+    }
+  ],
+  "names": {},
+  "exclude": []
+}

@@ -1,0 +1,23 @@
+{
+  "_siteUrl": "The public address of the site, with a trailing slash. Used for the canonical link and link previews (they need absolute URLs).",
+  "siteUrl": "https://tomfevrier.io/video-club/",
+  "_og": "Link-preview image (scripts/og.mjs): the TMDb ids of the 15 cases facing out, row by row (5 per shelf). Too few: other faves fill in.",
+  "og": {
+    "_posters": "Posters to use on the card instead of the site's, by TMDb id and language (file paths from TMDb's images): for films whose usual poster is covered in text.",
+    "posters": {
+      "19": { "fr": "/kr9wXRN23zLuWJIelahas1mtnYj.jpg" },
+      "902": { "en": "/inywij4eye6TKm7VpTjF4A2fFDi.jpg", "fr": "/68LLyfJQa7lkOfIVwOzcgg4YpJH.jpg" },
+      "11782": { "fr": "/eB5Ed8AmpIs0MQcaj6GplSwUShT.jpg" },
+      "32015": { "fr": "/vw7peAq8WWXhdjOMdYLSXzeLk4x.jpg" }
+    },
+    "faces": [
+      22504, 578, 149, 496243, 62, 19, 545611, 194, 11782, 16306, 9377, 32015, 940721, 1019939, 902
+    ]
+  },
+  "_skipMarkers": "Copies whose '❓' cell contains one of these are left out: ⏳ ordered / not received yet, ❌ duplicate to sell, 🫥 never received.",
+  "skipMarkers": ["⏳", "❌", "🫥"],
+  "_picks": "Tom's picks from the 'note T' column (out of 5): faves from faveMin, recommendations from recommendedMin. Unrated films go in data/picks.json.",
+  "picks": { "faveMin": 4.5, "recommendedMin": 4 },
+  "_posters": "'original': poster in the original language when it is English or French, otherwise the international one.",
+  "posters": { "policy": "original" }
+}

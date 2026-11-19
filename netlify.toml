@@ -1,0 +1,46 @@
+# Netlify build settings (the site is static; the sheet is read at build time by scripts/sync.mjs)
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Set SHEET_CSV_URL and TMDB_API_KEY in Site configuration → Environment variables (not here).
+  # The site is served at tomfevrier.io/video-club/ (proxied from the main site, see README), so the router needs the sub-path.
+  BASE_PATH = "/video-club"
+
+# Branch deploys (<branch>--<site>.netlify.app) are served from the root of their own address, not behind /video-club/.
+[context.branch-deploy.environment]
+  BASE_PATH = ""
+
+# The site's own address (<site>.netlify.app) serves the files from its root, but the pages ask for /video-club/_app/…
+# (production base path). These rewrites make that address work too. They do not affect tomfevrier.io/video-club/,
+# where the main site's proxy already strips the prefix (see README).
+[[redirects]]
+  from = "/video-club"
+  to = "/"
+  status = 200
+
+# The French page without its trailing slash (…/video-club/fr): serve it rather than let Netlify redirect to /fr/, as
+# behind the main site's proxy that redirect would point to tomfevrier.io/fr/ instead of tomfevrier.io/video-club/fr/.
+[[redirects]]
+  from = "/video-club/fr"
+  to = "/fr/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/fr"
+  to = "/fr/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/video-club/*"
+  to = "/:splat"
+  status = 200
+
+# Keep the TMDb cache between builds, so scheduled rebuilds only fetch new films.
+[[plugins]]
+  package = "netlify-plugin-cache"
+  [plugins.inputs]
+    paths = [".cache"]

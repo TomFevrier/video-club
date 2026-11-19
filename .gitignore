@@ -1,0 +1,18 @@
+.DS_Store
+node_modules
+.svelte-kit
+build
+.env
+.cache
+# the sheet: fetched at build time, and may hold more than the site shows
+data/blu-rays.csv
+# generated from the sheet + TMDb
+src/lib/data/movies.json
+src/lib/data/flags.json
+# blu-ray.com matches (npm run bluray): run by hand, kept local
+data/bluray.json
+# link-preview images, drawn from the data at build time
+src/lib/data/og.json
+static/og/
+# personal Claude Code settings
+.claude/settings.local.json

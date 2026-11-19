@@ -1,0 +1,193 @@
+:root {
+  --bg: #0a0f24;
+  --bg2: #0e1633;
+  --card: #131d44;
+  --card2: #1a2658;
+  --line: #27356f;
+  --text: #eef0fa;
+  --muted: #9aa5d3;
+  --red: #b22222;
+  --red-hi: #e8584c;
+  --gold: #eab62f;
+  --navy: #3a4fa3;
+  --cell: #18224d;
+  /* Google Fonts, loaded in app.html: Lato for text, Assistant for titles, Playfair Display for numerals and accents */
+  --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --title: 'Assistant', 'Lato', system-ui, sans-serif;
+  --sans: 'Lato', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: dark;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* No native scrollbar for the page: it took room beside the content and made the layout jump sideways whenever
+     filtering made the page too short to scroll. ScrollIndicator.svelte draws one over the content instead. */
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none; /* Safari */
+}
+body {
+  margin: 0;
+  font: 15px/1.5 var(--sans);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  background:
+    radial-gradient(900px 480px at 8% -8%, #3a1030 0%, transparent 62%),
+    radial-gradient(900px 520px at 100% 0%, #142a66 0%, transparent 58%), var(--bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+a {
+  color: var(--gold);
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+.s12 {
+  grid-column: span 12;
+}
+.s8 {
+  grid-column: span 8;
+}
+.s7 {
+  grid-column: span 7;
+}
+.s6 {
+  grid-column: span 6;
+}
+.s5 {
+  grid-column: span 5;
+}
+.s4 {
+  grid-column: span 4;
+}
+@media (max-width: 900px) {
+  .s8,
+  .s7,
+  .s6,
+  .s5,
+  .s4 {
+    grid-column: span 12;
+  }
+}
+
+.card {
+  background: linear-gradient(180deg, var(--card), var(--bg2));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  min-width: 0;
+  position: relative;
+}
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.card h2 {
+  font: 700 13px/1 var(--title);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.card .sub {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+:focus,
+:focus-visible {
+  outline: none;
+}
+button,
+[role='button'],
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+.muted {
+  color: var(--muted);
+}
+.empty {
+  color: var(--muted);
+  padding: 24px 0;
+  text-align: center;
+}
+svg text {
+  fill: var(--muted);
+  font-family: var(--sans);
+}
+/* everything that can be clicked, or reacts to the pointer, shows a hand (disabled controls: not-allowed) */
+[role='button'],
+.sel {
+  cursor: pointer;
+}
+
+/* No orphans. `balance` evens out the lines of short text (headings, hints, empty states, tooltips, the footer);
+   `pretty` only avoids a lone last word, which suits longer prose such as the cast list. */
+h1,
+h2,
+h3,
+header p,
+.hint,
+.sub,
+.empty,
+.tooltip,
+footer p {
+  text-wrap: balance;
+}
+dd,
+.meta {
+  text-wrap: pretty;
+}
+
+/* select pills (sorting, genre, decade) */
+.sel select {
+  appearance: none;
+  background: #0a1030
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa5d3' stroke-width='1.5'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 32px 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  max-width: 100%;
+}
+.sel select:focus-visible {
+  border-color: var(--gold);
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- a disc: gold with a darker edge, two light reflections, an orange hub and a hole that lets the background through -->
+  <path fill="#d6a432" fill-rule="evenodd" d="M 2 50 a 48 48 0 1 0 96 0 a 48 48 0 1 0 -96 0 Z M 38.5 50 a 11.5 11.5 0 1 0 23 0 a 11.5 11.5 0 1 0 -23 0 Z"/>
+  <path fill="#f8c232" fill-rule="evenodd" d="M 4.5 50 a 45.5 45.5 0 1 0 91 0 a 45.5 45.5 0 1 0 -91 0 Z M 38.5 50 a 11.5 11.5 0 1 0 23 0 a 11.5 11.5 0 1 0 -23 0 Z"/>
+  <path fill="#fde9a9" d="M 6.49 36.70 A 45.5 45.5 0 0 1 36.70 6.49 L 44.74 32.79 A 18 18 0 0 0 32.79 44.74 Z M 93.51 63.30 A 45.5 45.5 0 0 1 63.30 93.51 L 55.26 67.21 A 18 18 0 0 0 67.21 55.26 Z"/>
+  <path fill="#ffa000" fill-rule="evenodd" d="M 31 50 a 19 19 0 1 0 38 0 a 19 19 0 1 0 -38 0 Z M 38.5 50 a 11.5 11.5 0 1 0 23 0 a 11.5 11.5 0 1 0 -23 0 Z"/>
+  <path fill="#d98a0c" fill-rule="evenodd" d="M 36 50 a 14 14 0 1 0 28 0 a 14 14 0 1 0 -28 0 Z M 38.5 50 a 11.5 11.5 0 1 0 23 0 a 11.5 11.5 0 1 0 -23 0 Z"/>
+</svg>
