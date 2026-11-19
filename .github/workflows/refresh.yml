@@ -4,7 +4,8 @@ name: Refresh site from the sheet
 # Netlify then re-reads the Google Sheet and redeploys (new films only cost API calls thanks to the cache).
 on:
   schedule:
-    - cron: '23 */4 * * *'
+    # once a day, at 04:23 UTC (GitHub's clock): early morning in France, when nobody is browsing
+    - cron: '23 4 * * *'
   workflow_dispatch:
 
 jobs:

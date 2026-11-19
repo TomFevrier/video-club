@@ -10,8 +10,8 @@ const messages = {
     fr: 'Parcours la collection et choisis ce que tu aimerais emprunter'
   },
   'app.description': {
-    en: 'My Blu-ray collection: filter by format, language or subtitles, and pick the films you’d like to borrow.',
-    fr: 'Ma collection de Blu-ray : filtre par format, langue ou sous-titres, et choisis les films que tu aimerais emprunter.'
+    en: 'My blu-ray collection: filter by format, language or subtitles, and pick the films you’d like to borrow.',
+    fr: 'Ma collection de blu-rays : filtre par format, langue ou sous-titres, et choisis les films que tu aimerais emprunter.'
   },
   'app.stats': {
     en: '{films} films · {plex} also on Plex',

@@ -79,8 +79,8 @@ Every build logs the sagas it found, with their number of films.
 3. **Push to GitHub, then Netlify → Import from GitHub.** `netlify.toml` has the build settings.
 4. **Site configuration → Environment variables**: `SHEET_CSV_URL` and `TMDB_API_KEY`.
 5. **Scheduled refresh**: add a Netlify build hook as the GitHub secret `NETLIFY_BUILD_HOOK`;
-   `.github/workflows/refresh.yml` rebuilds every 4 hours. TMDb lookups are cached (`.cache`), so only new films cost
-   API calls.
+   `.github/workflows/refresh.yml` rebuilds once a day (04:23 UTC), and on demand from its _Run workflow_ button. TMDb
+   lookups are cached (`.cache`), so only new films cost API calls.
 6. **Serve it at `tomfevrier.io/video-club/`**: add to the main site's `netlify.toml`, as for the film diary, two proxy
    rules (`200`, never `301`):
 
@@ -125,7 +125,7 @@ the browser's language on the main page.
 `scripts/og.mjs` (run by `dev` and `build`, after the sync) draws the 1200×630 preview image, one per language: a
 bookcase of three shelves beside the title. The 15 cases facing out are the films listed in `config.json → og.faces`
 (TMDb ids, row by row, five per shelf), with their posters in that language; the spines between them are other faves
-and recommended films whose title fits along the spine. Blue for Blu-ray, black for 4K. If a listed film is missing or
-has no Blu-ray, the build log says so and another fave takes its place. `node scripts/og.mjs --preview <folder>` draws
+and recommended films whose title fits along the spine. Blue for blu-ray, black for 4K. If a listed film is missing or
+has no blu-ray, the build log says so and another fave takes its place. `node scripts/og.mjs --preview <folder>` draws
 both languages into a folder to look at. The images (`static/og/`, hashed names) and `src/lib/data/og.json` are
 generated, not committed; if drawing fails the build carries on without an `og:image`. After changing the card, refresh Facebook's cache with its Sharing Debugger.

@@ -48,7 +48,7 @@ const TEXT = {
     kicker: 'BLU-RAY · 4K · DVD',
     title: ['Le vidé◎-club', 'de Tom'],
     films: (n) => `${n} films à emprunter`,
-    alt: (titles) => `Boîtiers Blu-ray de films préférés de Tom sur des étagères : ${titles}`
+    alt: (titles) => `Boîtiers blu-ray des films préférés de Tom sur des étagères : ${titles}`
   }
 };
 
@@ -440,7 +440,7 @@ function choose(films) {
     .filter((f) => {
       if (!f) return false;
       if (!onDisc(f) || !(f.posters.en || f.posters.fr))
-        log(`${f.titles.en}: no Blu-ray or no poster, left off the card`);
+        log(`${f.titles.en}: no blu-ray or no poster, left off the card`);
       return onDisc(f) && (f.posters.en || f.posters.fr);
     });
   const missing = (config.og?.faces ?? []).filter((id) => !byId.has(id));
