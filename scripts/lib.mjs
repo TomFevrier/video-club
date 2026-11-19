@@ -168,9 +168,11 @@ export function groupFilms(rows, { config, picks = {} }) {
 }
 
 /**
- * Poster of a film for a page language (`lang`, "en" or "fr"). Films in English or French keep their original poster
- * in both languages; the others get the poster in the page's language (policy "original"). Policy "always-original"
- * prefers the original-language poster for every film. Falls back progressively so there is always *a* poster.
+ * Poster of a film for a page language (`lang`, "en" or "fr"). Same rule in cine-stats and video-club:
+ *   English page: an English-language poster whenever TMDb has one, then the original language, then French.
+ *   French page:  policy "original": English and French films keep their original poster, the others get the French
+ *                 one (then English, then the original language). Policy "always-original": the original language first.
+ * Within a language the best-rated poster wins; TMDb's default poster is the last resort, so there is always one.
  */
 export function pickPoster(images, originalLanguage, lang, defaultPath, policy = 'original') {
   const list = [...(images?.posters ?? [])].sort(
@@ -179,11 +181,12 @@ export function pickPoster(images, originalLanguage, lang, defaultPath, policy =
   );
   const by = (l) => list.find((p) => p.iso_639_1 === l)?.file_path;
   const orig = originalLanguage || 'en';
-  const other = lang === 'fr' ? 'en' : 'fr';
   const wanted =
-    policy === 'always-original' || orig === 'en' || orig === 'fr'
-      ? [orig, lang, other]
-      : [lang, other, orig];
+    lang === 'en'
+      ? ['en', orig, 'fr']
+      : policy === 'always-original' || orig === 'en' || orig === 'fr'
+        ? [orig, 'fr', 'en']
+        : ['fr', 'en', orig];
   for (const l of wanted) {
     const p = by(l);
     if (p) return p;

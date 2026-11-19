@@ -47,7 +47,8 @@ const saveCache = () => {
 };
 const fresh = (e, days) => e && Date.now() - e.at < days * DAY;
 // v2: posters per page language, and the film's TMDb collection (for the sagas)
-const CACHE_VERSION = 2;
+// v3: the film's posters (language, rating), picked from when assembling, as in cine-stats
+const CACHE_VERSION = 3;
 
 let tmdbFailures = 0;
 async function tmdb(pathname, params = {}) {
@@ -107,8 +108,6 @@ async function enrichTmdb(films) {
         return;
       }
       const fr = d.translations?.translations?.find((t) => t.iso_639_1 === 'fr')?.data ?? {};
-      const poster = (lang) =>
-        pickPoster(d.images, d.original_language, lang, d.poster_path, config.posters?.policy);
       const c = d.belongs_to_collection;
       cache.movies[id] = {
         v: CACHE_VERSION,
@@ -121,7 +120,13 @@ async function enrichTmdb(films) {
         runtime: d.runtime || null,
         genres: (d.genres ?? []).map((g) => g.name),
         directors: (d.credits?.crew ?? []).filter((c) => c.job === 'Director').map((c) => c.name),
-        posters: { en: poster('en'), fr: poster('fr') },
+        posterPath: d.poster_path,
+        posters: (d.images?.posters ?? []).slice(0, 40).map((p) => ({
+          iso_639_1: p.iso_639_1,
+          file_path: p.file_path,
+          vote_average: p.vote_average,
+          vote_count: p.vote_count
+        })),
         collection: c ? { id: c.id, name: c.name } : null
       };
       if (++done % 100 === 0) saveCache();
@@ -163,6 +168,18 @@ async function enrichCollections(films) {
 
 // ---- 2. put it together -----------------------------------------------------------------------------------------
 
+/** The poster of a cached film for a page language (null when TMDb has none). */
+const poster = (m, lang) =>
+  m
+    ? pickPoster(
+        { posters: m.posters },
+        m.originalLanguage,
+        lang,
+        m.posterPath,
+        config.posters?.policy
+      )
+    : null;
+
 function assemble(sheetFilms) {
   return sheetFilms
     .map((f) => {
@@ -188,7 +205,7 @@ function assemble(sheetFilms) {
         plex: f.plex,
         distributors: f.distributors,
         tier: f.tier,
-        posters: m?.posters ?? { en: null, fr: null }, // per page language
+        posters: { en: poster(m, 'en'), fr: poster(m, 'fr') }, // per page language
         collection: m?.collection ?? null
       };
     })

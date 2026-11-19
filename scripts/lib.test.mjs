@@ -196,7 +196,7 @@ test('manual picks complete the ratings; the higher tier wins', () => {
   assert.deepEqual(tiers, { 10: 'recommended', 11: 'fave', 12: 'recommended' });
 });
 
-test('posters: original for English/French films, the page language for the others', () => {
+test('posters: English on the English page when there is one; on the French page, the original or French one', () => {
   const images = {
     posters: [
       { iso_639_1: 'en', file_path: '/en.jpg', vote_average: 5 },
@@ -204,12 +204,24 @@ test('posters: original for English/French films, the page language for the othe
       { iso_639_1: 'ko', file_path: '/ko.jpg', vote_average: 9 }
     ]
   };
-  assert.equal(pickPoster(images, 'fr', 'en', '/d.jpg'), '/fr.jpg');
-  assert.equal(pickPoster(images, 'en', 'fr', '/d.jpg'), '/en.jpg');
+  const noEnglish = { posters: images.posters.filter((p) => p.iso_639_1 !== 'en') };
+  // English page: English whenever it exists, whatever the film's language
+  assert.equal(pickPoster(images, 'fr', 'en', '/d.jpg'), '/en.jpg');
   assert.equal(pickPoster(images, 'ko', 'en', '/d.jpg'), '/en.jpg');
+  assert.equal(pickPoster(images, 'ko', 'en', '/d.jpg', 'always-original'), '/en.jpg');
+  // ...otherwise the original language, then French
+  assert.equal(pickPoster(noEnglish, 'ko', 'en', '/d.jpg'), '/ko.jpg');
+  assert.equal(pickPoster(noEnglish, 'fr', 'en', '/d.jpg'), '/fr.jpg');
+  // French page: English and French films keep their original poster, the others get the French one
+  assert.equal(pickPoster(images, 'fr', 'fr', '/d.jpg'), '/fr.jpg');
+  assert.equal(pickPoster(images, 'en', 'fr', '/d.jpg'), '/en.jpg');
   assert.equal(pickPoster(images, 'ko', 'fr', '/d.jpg'), '/fr.jpg');
   assert.equal(pickPoster(images, 'ko', 'fr', '/d.jpg', 'always-original'), '/ko.jpg');
+  // nothing in any of these languages: TMDb's default poster
   assert.equal(pickPoster({ posters: [] }, 'ja', 'fr', '/d.jpg'), '/d.jpg');
+});
+
+test('languages', () => {
   assert.equal(normaliseLanguage('cn'), 'yue');
   assert.equal(normaliseLanguage('ja'), 'ja');
 });
