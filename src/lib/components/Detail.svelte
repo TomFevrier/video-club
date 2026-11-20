@@ -126,7 +126,7 @@
             title={app.t('detail.letterboxd')}
             aria-label={app.t('detail.letterboxd')}
           >
-            <Logo name="letterboxd" height={14} />
+            <Logo name="letterboxd" height={12} />
           </a>
           <a
             href="https://www.themoviedb.org/movie/{m.tmdbId}"
@@ -135,7 +135,7 @@
             title={app.t('detail.tmdb')}
             aria-label={app.t('detail.tmdb')}
           >
-            <Logo name="tmdb" height={10} />
+            <Logo name="tmdb" height={12} />
           </a>
           {#if m.blurayUrl}
             <!-- eslint-disable svelte/no-navigation-without-resolve -- an external page, not a route of the site -->
