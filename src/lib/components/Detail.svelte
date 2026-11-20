@@ -1,4 +1,6 @@
 <script>
+  import { fade } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
   import X from '@lucide/svelte/icons/x';
   import Heart from '@lucide/svelte/icons/heart';
   import ThumbsUp from '@lucide/svelte/icons/thumbs-up';
@@ -15,6 +17,15 @@
 
   const m = $derived(app.detail);
   const close = () => (app.detail = null);
+
+  // The popup fades in and out, the dialog rising a little: no motion at all when the visitor prefers it that way
+  const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fadeBack = () => ({ duration: calm() ? 0 : 200 });
+  const rise = () => ({
+    duration: calm() ? 0 : 260,
+    easing: cubicOut,
+    css: (t, u) => `opacity: ${t}; transform: translateY(${u * 12}px) scale(${0.97 + 0.03 * t})`
+  });
   const subs = $derived(m ? ['en', 'fr'].filter((l) => m.subtitles[l]) : []);
   // HDR is a property of the 4K disc: it rides on that pill ("4K · DV") instead of having its own row
   const HDR_SHORT = { 'Dolby Vision': 'DV', HDR10: 'HDR10' };
@@ -39,8 +50,18 @@
 
 {#if m}
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-  <div class="back" onclick={(e) => e.target === e.currentTarget && close()}>
-    <div class="dlg" role="dialog" aria-modal="true" aria-label={app.title(m)}>
+  <div
+    class="back"
+    transition:fade={fadeBack()}
+    onclick={(e) => e.target === e.currentTarget && close()}
+  >
+    <div
+      class="dlg"
+      transition:rise|global
+      role="dialog"
+      aria-modal="true"
+      aria-label={app.title(m)}
+    >
       <button class="x" onclick={close} aria-label={app.t('detail.close')}><X size={22} /></button>
 
       <div class="poster-col">

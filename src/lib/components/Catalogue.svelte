@@ -254,10 +254,11 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 18px 16px;
   }
-  @media (max-width: 420px) {
+  /* phones: three posters per row, like the log in film-diary */
+  @media (max-width: 640px) {
     .grid-films {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
     }
   }
   .top {

@@ -125,9 +125,7 @@ h3 {
 :focus-visible {
   outline: none;
 }
-button,
-[role='button'],
-a {
+* {
   -webkit-tap-highlight-color: transparent;
 }
 .muted {
