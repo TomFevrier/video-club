@@ -25,6 +25,7 @@ what, and personal ratings stay in the sheet (the ratings are turned into the tw
 | `titre`, `annee`                     | fallback title / year when TMDb has none; also searchable. "Haine (La)" reads "La Haine"         |
 | `tmdb_id`                            | the film (rows without a number, such as box sets, are left out; see below)                      |
 | `boxd_id`                            | Letterboxd link (`boxd.it/…`)                                                                    |
+| `ean`                                | the cell's own link to the edition on blu-ray.com (see below)                                    |
 | `❓`                                 | copies marked ⏳ (not received), ❌ (to sell) or 🫥 (never received) are ignored (`config.json`) |
 | `def`, `combo`                       | formats: unique values of both, split on `+`, `HD` = Blu-ray. Bonus discs, booklets, CDs ignored |
 | `hdr`                                | Dolby Vision / HDR10 label                                                                       |
@@ -32,6 +33,11 @@ what, and personal ratings stay in the sheet (the ratings are turned into the tw
 | `💾`                                 | **✅ = on Plex.** 💾 alone (still to rip) and ❓ are not                                         |
 | `accord_prealable_paul`              | `INTERDIT` = can't be lent (left out when no copy can); anything else = lendable                 |
 | `note T`                             | 4 and up = recommended, 4.5 and up = absolute fave (thresholds in `config.json`)                 |
+
+**Links in cells.** The CSV export only has the text of a cell, so the `ean` links are read from the XLSX export of the
+same tab (same sheet URL, same sharing; no API key). The first blu-ray.com link among a film's editions becomes the
+"Blu-ray" pill in its dialog. Links to other sites are ignored. With a local CSV, or if the download fails, the site is
+built without them.
 
 Several rows for one film (editions, copies) become **one film**: formats are combined, and it is as available as its
 most available copy. `vente_ou_location` is ignored on purpose.

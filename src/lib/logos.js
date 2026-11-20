@@ -1,5 +1,6 @@
 // Brand logos are plain image files in static/logos/.
 export const logos = {
   letterboxd: 'logos/letterboxd.svg',
-  tmdb: 'logos/tmdb.svg'
+  tmdb: 'logos/tmdb.svg',
+  bluray: 'logos/bluray-com.svg'
 };

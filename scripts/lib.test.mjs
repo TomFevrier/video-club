@@ -12,6 +12,8 @@ import {
   readableTitle,
   tierFromRating,
   groupFilms,
+  eanLinks,
+  unzip,
   pickPoster,
   normaliseLanguage,
   cleanCollectionName,
@@ -281,4 +283,115 @@ test('flags follow aliases and fall back to a country', () => {
   const flags = languageFlags(iconset, ['en', 'fr', 'yue', 'xx'], { yue: 'hk' });
   assert.deepEqual(Object.keys(flags), ['en', 'fr', 'yue']);
   assert.match(flags.fr, /^<svg [^>]*viewBox="0 0 512 512"><g id="fr"\/><\/svg>$/);
+});
+
+// a minimal ZIP (stored, no compression), enough for unzip() and eanLinks()
+function zip(files) {
+  const parts = [];
+  const central = [];
+  let offset = 0;
+  for (const [name, text] of Object.entries(files)) {
+    const data = Buffer.from(text);
+    const n = Buffer.from(name);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(n.length, 26);
+    const c = Buffer.alloc(46);
+    c.writeUInt32LE(0x02014b50, 0);
+    c.writeUInt32LE(data.length, 20);
+    c.writeUInt32LE(data.length, 24);
+    c.writeUInt16LE(n.length, 28);
+    c.writeUInt32LE(offset, 42);
+    central.push(c, n);
+    parts.push(local, n, data);
+    offset += 30 + n.length + data.length;
+  }
+  const cd = Buffer.concat(central);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(Object.keys(files).length, 10);
+  end.writeUInt32LE(cd.length, 12);
+  end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...parts, cd, end]);
+}
+
+test('zip files are read back', () => {
+  assert.equal(unzip(zip({ 'a.txt': 'hello', 'b/c.xml': '<x/>' }))['b/c.xml'].toString(), '<x/>');
+});
+
+test('links of the ean column come from the xlsx export', () => {
+  const link = (ref, id) => `<hyperlink r:id="${id}" ref="${ref}"/>`;
+  const xlsx = zip({
+    'xl/workbook.xml':
+      '<workbook><sheets><sheet name="Blu-rays" sheetId="1" r:id="rId5"/></sheets></workbook>',
+    'xl/_rels/workbook.xml.rels':
+      '<Relationships><Relationship Id="rId5" Type="x" Target="worksheets/sheet1.xml"/></Relationships>',
+    'xl/sharedStrings.xml':
+      '<sst><si><t>titre</t></si><si><t>ean</t></si><si><t>3700301019745</t></si></sst>',
+    'xl/worksheets/sheet1.xml':
+      '<worksheet><sheetData>' +
+      '<row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c></row>' +
+      '<row r="2"><c r="B2" t="s"><v>2</v></c></row>' +
+      '<row r="3"><c r="B3"><v>5051892258012</v></c></row>' +
+      '<row r="4"><c r="B4"><v>1111111111111</v></c></row>' +
+      '</sheetData><hyperlinks>' +
+      [link('A2', 'rId1'), link('B2', 'rId2'), link('B3', 'rId3')].join('') +
+      '</hyperlinks></worksheet>',
+    'xl/worksheets/_rels/sheet1.xml.rels':
+      '<Relationships>' +
+      '<Relationship Id="rId1" Type="h" Target="https://www.themoviedb.org/movie/1"/>' +
+      '<Relationship Id="rId2" Type="h" Target="https://www.blu-ray.com/movies/A/1/?a=1&amp;b=2"/>' +
+      '<Relationship Id="rId3" Type="h" Target="https://www.blu-ray.com/movies/B/2/"/>' +
+      '</Relationships>'
+  });
+  const links = eanLinks(xlsx);
+  assert.deepEqual(
+    [...links],
+    [
+      ['3700301019745', 'https://www.blu-ray.com/movies/A/1/?a=1&b=2'],
+      ['5051892258012', 'https://www.blu-ray.com/movies/B/2/']
+    ]
+  );
+});
+
+test('a film keeps the blu-ray.com link of its edition, and nothing else', () => {
+  const links = new Map([
+    ['111', 'https://www.blu-ray.com/movies/A/1/'],
+    ['222', 'https://evil.example/']
+  ]);
+  const link = (ean) => groupFilms([row({ ean })], { config, links }).films[0].blurayUrl;
+  assert.equal(link('111'), 'https://www.blu-ray.com/movies/A/1/');
+  assert.equal(link('222'), null);
+  assert.equal(link('333'), null);
+});
+
+test('films in a box set take the box own link; box sets matched by exact name only', () => {
+  const links = new Map([
+    ['1', 'https://www.blu-ray.com/movies/Box/1/'],
+    ['2', 'https://www.blu-ray.com/movies/Alone/2/'],
+    ['3', 'https://www.blu-ray.com/movies/Other/3/']
+  ]);
+  const rows = [
+    row({ titre: '0 / Coffret Alien', tmdb_id: 'Coffret', ean: '1' }),
+    row({ titre: '0 / Coffret Predator', tmdb_id: 'Coffret', ean: '3' }),
+    row({ titre: '0 / Never mentioned (4 films)', tmdb_id: 'Coffret', ean: '3' }),
+    row({ titre: '0 / ZZZ', tmdb_id: 'Coffret' }), // a separator, or a box without a link: ignored
+    row({ titre: '0 / Kar-wai - L’intégrale', tmdb_id: 'Coffret', ean: '1' }),
+    row({ titre: 'In the Mood', tmdb_id: '843', type_ou_coffret: 'Kar-wai (regroupés)' }),
+    row({ titre: 'Alien', tmdb_id: '348', type_ou_coffret: 'Coffret Alien' }),
+    // a boxed copy wins over a standalone one, whatever the row order
+    row({ titre: 'Aliens', tmdb_id: '679', ean: '2' }),
+    row({ titre: 'Aliens', tmdb_id: '679', type_ou_coffret: 'Coffret Alien' }),
+    // "Coffret Predator 2" is not "Coffret Predator": no box link, only the film's own edition
+    row({ titre: 'Predator', tmdb_id: '106', ean: '2', type_ou_coffret: 'Coffret Predator 2' })
+  ];
+  const { films, skipped } = groupFilms(rows, { config, links });
+  const url = (id) => films.find((f) => f.id === id).blurayUrl;
+  assert.equal(url(348), 'https://www.blu-ray.com/movies/Box/1/');
+  assert.equal(url(843), 'https://www.blu-ray.com/movies/Box/1/'); // suffixes ignored, "Kar-wai" kept whole
+  assert.equal(url(679), 'https://www.blu-ray.com/movies/Box/1/');
+  assert.equal(url(106), 'https://www.blu-ray.com/movies/Alone/2/');
+  assert.deepEqual(skipped.unmatchedBoxes, ['Coffret Predator', 'Never mentioned (4 films)']);
 });

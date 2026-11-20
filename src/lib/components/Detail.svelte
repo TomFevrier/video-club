@@ -45,28 +45,6 @@
 
       <div class="poster-col">
         <Poster film={m} size="w342" />
-        <div class="links">
-          <a
-            href={m.boxdId
-              ? `https://boxd.it/${m.boxdId}`
-              : `https://letterboxd.com/tmdb/${m.tmdbId}/`}
-            target="_blank"
-            rel="noopener"
-            title={app.t('detail.letterboxd')}
-            aria-label={app.t('detail.letterboxd')}
-          >
-            <Logo name="letterboxd" height={14} />
-          </a>
-          <a
-            href="https://www.themoviedb.org/movie/{m.tmdbId}"
-            target="_blank"
-            rel="noopener"
-            title={app.t('detail.tmdb')}
-            aria-label={app.t('detail.tmdb')}
-          >
-            <Logo name="tmdb" height={10} />
-          </a>
-        </div>
       </div>
 
       <div class="head">
@@ -138,6 +116,43 @@
           </dd>
         </dl>
 
+        <div class="links">
+          <a
+            href={m.boxdId
+              ? `https://boxd.it/${m.boxdId}`
+              : `https://letterboxd.com/tmdb/${m.tmdbId}/`}
+            target="_blank"
+            rel="noopener"
+            title={app.t('detail.letterboxd')}
+            aria-label={app.t('detail.letterboxd')}
+          >
+            <Logo name="letterboxd" height={14} />
+          </a>
+          <a
+            href="https://www.themoviedb.org/movie/{m.tmdbId}"
+            target="_blank"
+            rel="noopener"
+            title={app.t('detail.tmdb')}
+            aria-label={app.t('detail.tmdb')}
+          >
+            <Logo name="tmdb" height={10} />
+          </a>
+          {#if m.blurayUrl}
+            <!-- eslint-disable svelte/no-navigation-without-resolve -- an external page, not a route of the site -->
+            <a
+              class="disc"
+              href={m.blurayUrl}
+              target="_blank"
+              rel="noopener"
+              title={app.t('detail.bluray')}
+              aria-label={app.t('detail.bluray')}
+            >
+              <Logo name="bluray" height={20} />
+            </a>
+            <!-- eslint-enable svelte/no-navigation-without-resolve -->
+          {/if}
+        </div>
+
         <button class="add" class:on={picked} onclick={() => app.toggle(m)}>
           {#if picked}
             <TicketCheck size={18} />{app.t('card.remove')}
@@ -167,7 +182,7 @@
     position: relative;
     display: grid;
     /* desktop: the poster on the left, the heading and the details beside it, no taller than the poster */
-    grid-template-columns: 170px 1fr;
+    grid-template-columns: 180px 1fr;
     grid-template-rows: auto 1fr;
     grid-template-areas:
       'poster head'
@@ -193,7 +208,7 @@
       padding: 16px;
     }
     .poster-col {
-      max-width: 170px;
+      max-width: 180px;
     }
     .head .tags {
       margin-bottom: 0; /* the grid's gap is enough */
@@ -226,33 +241,55 @@
     position: relative;
     align-self: start;
   }
+  /* Letterboxd, TMDb and blu-ray.com: below the details, above the borrow button */
   .links {
-    position: absolute;
-    left: 8px;
-    bottom: 8px;
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
+    display: flex;
+    align-items: center;
     gap: 6px;
+    margin: 0 0 16px;
   }
   .links a {
+    --bg: #070b1ccc;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 26px;
-    padding: 0 7px;
+    padding: 0 9px;
     border-radius: 999px;
-    background: #070b1ccc;
+    background: var(--bg);
     border: 1px solid #ffffff26;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
     transition:
       background 0.12s,
       border-color 0.12s;
   }
   .links a:hover {
-    background: #121b45;
+    --bg: #121b45;
     border-color: #ffffff59;
+  }
+  /* the blu-ray.com pill: a perfect circle in the logo's blue, with the same outline as the others (the fill stops
+     at the border, so the outline reads on the dark background like theirs). A thin line and a wider gap set it
+     apart: the other two are links to the film, this one to the edition. */
+  .links a.disc {
+    --bg: #5cb9f4;
+    position: relative;
+    width: 26px;
+    margin-left: 12px;
+    padding: 0;
+    background:
+      linear-gradient(var(--bg), var(--bg)) padding-box,
+      #070b1ccc;
+  }
+  .links a.disc::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 4px;
+    bottom: 4px;
+    width: 1px;
+    background: #ffffff26;
+  }
+  .links a.disc:hover {
+    --bg: #7cc8f7;
   }
   h3 {
     font: 800 22px/1.15 var(--title);
@@ -293,7 +330,7 @@
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 1px 14px;
-    margin: 0 0 16px; /* room above the button */
+    margin: 0 0 12px; /* room above the links */
     font-size: 13.5px;
   }
   dt {

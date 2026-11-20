@@ -1,6 +1,7 @@
 // Reading the Google Sheet, shared by sync.mjs and bluray.mjs.
 import fs from 'node:fs';
 import path from 'node:path';
+import { eanLinks } from './lib.mjs';
 
 /** Loads `.env` from the project root into process.env (variables already set win). */
 export function loadDotEnv(root) {
@@ -46,4 +47,33 @@ export async function readSheet(root, log = () => {}) {
     }
   }
   throw new Error('No data: set SHEET_CSV_URL or add data/blu-rays.csv');
+}
+
+/** The same tab as an XLSX download (it keeps the links the CSV drops), or null for anything but a Google Sheets link. */
+function toXlsxUrl(u) {
+  if (/output=csv/.test(u)) return u.replace('output=csv', 'output=xlsx');
+  const m = u.match(/spreadsheets\/d\/([\w-]+)/);
+  if (!m || m[1] === 'e') return null;
+  const gid = u.match(/gid=(\d+)/)?.[1];
+  return `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=xlsx${gid ? `&gid=${gid}` : ''}`;
+}
+
+/**
+ * { ean -> blu-ray.com link } from the sheet. Links are a bonus: with a local CSV, or if the download fails,
+ * the site is simply built without them.
+ */
+export async function readSheetLinks(log = () => {}) {
+  const url =
+    /^https?:/.test(process.env.SHEET_CSV_URL ?? '') && toXlsxUrl(process.env.SHEET_CSV_URL);
+  if (!url) return new Map();
+  try {
+    const res = await fetch(url, { redirect: 'follow' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const links = eanLinks(Buffer.from(await res.arrayBuffer()));
+    log(`sheet: ${links.size} links to blu-ray.com`);
+    return links;
+  } catch (e) {
+    log(`sheet: links unavailable (${e.message}), building without them`);
+    return new Map();
+  }
 }

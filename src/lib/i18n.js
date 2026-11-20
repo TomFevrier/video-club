@@ -87,6 +87,10 @@ const messages = {
   'detail.spoken': { en: 'Original language', fr: 'Langue originale' },
   'detail.subs': { en: 'Subtitles', fr: 'Sous-titres' },
   'detail.letterboxd': { en: 'Open on Letterboxd', fr: 'Ouvrir sur Letterboxd' },
+  'detail.bluray': {
+    en: 'View this edition on blu-ray.com',
+    fr: 'Voir cette édition sur blu-ray.com'
+  },
   'detail.tmdb': { en: 'Open on TMDb', fr: 'Ouvrir sur TMDb' },
   'detail.noSubs': { en: 'no subtitles', fr: 'sans sous-titres' },
 

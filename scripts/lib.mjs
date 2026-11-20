@@ -1,6 +1,7 @@
 // Pure helpers for sync.mjs (no I/O, so they can be unit tested): the rules that turn the sheet's rows into one entry
 // per film. Only the columns used here ever reach the site: prices, order numbers, who bought what and the personal
 // ratings stay in the sheet.
+import { inflateRawSync } from 'node:zlib';
 import { csvParse } from 'd3-dsv';
 
 /** CSV -> array of objects (d3-dsv), with trimmed headers/values and BOM stripped. */
@@ -90,6 +91,9 @@ export function tierFromRating(rating, { faveMin = 4.5, recommendedMin = 4 } = {
 const TIER_RANK = { recommended: 1, fave: 2 };
 const bestTier = (a, b) => ((TIER_RANK[a] ?? 0) >= (TIER_RANK[b] ?? 0) ? a : b) ?? null;
 
+/** Only blu-ray.com pages are linked, whatever the sheet holds. */
+const blurayLink = (u) => (/^https:\/\/(www\.)?blu-ray\.com\//.test(u ?? '') ? u : null);
+
 /**
  * One entry per film (TMDb id) from the sheet's rows. Left out, and counted in `skipped`:
  *   - copies whose "❓" cell holds a marker from config.skipMarkers (⏳ not received yet, ❌ to sell, 🫥 never received)
@@ -97,9 +101,31 @@ const bestTier = (a, b) => ((TIER_RANK[a] ?? 0) >= (TIER_RANK[b] ?? 0) ? a : b) 
  * Several copies / editions of a film are merged: formats are the union, availability the most open one.
  * `picks` = the manual lists of TMDb ids ({ recommended: [...], faves: [...] }) for films without a rating.
  */
-export function groupFilms(rows, { config, picks = {} }) {
-  const skipped = { excluded: 0, boxes: 0, unlendable: 0, unmatched: [] };
+export function groupFilms(rows, { config, picks = {}, links = new Map() }) {
+  const skipped = { excluded: 0, boxes: 0, unlendable: 0, unmatched: [], unmatchedBoxes: [] };
   const byId = new Map();
+
+  // A film in a box set links to the box set's own page. The box row is titled "0 / <name>" and the films of the box
+  // have <name> in `type_ou_coffret`. The names must be equal once a suffix is ignored: "(3 films)", or what follows
+  // a spaced hyphen ("Tarkovski - L’intégrale"). Nothing looser than that is matched (the leftovers are reported).
+  const boxKey = (s) =>
+    (s ?? '')
+      .replace(/\s*\([^)]*\)\s*$/, '')
+      .replace(/\s+[-–—]\s+.*$/, '')
+      .trim();
+  const boxLinks = new Map(); // box name -> link of its edition
+  const boxTitles = new Map(); // box name -> its title in the sheet, for the report
+  for (const r of rows) {
+    if (!/^0\s*\//.test(r.titre ?? '')) continue;
+    const link = blurayLink(links.get(eanKey(r.ean)));
+    if (!link) continue; // separators and box sets without a link play no part
+    const title = r.titre.replace(/^0\s*\/\s*/, '').trim();
+    const name = boxKey(title);
+    if (!boxLinks.has(name)) boxLinks.set(name, link);
+    boxTitles.set(name, boxTitles.get(name) ?? title);
+  }
+  const usedBoxes = new Set();
+  const boxed = new Set(); // films already linked to a box set
   const manual = new Map([
     ...(picks.recommended ?? []).map((id) => [+id, 'recommended']),
     ...(picks.faves ?? []).map((id) => [+id, 'fave'])
@@ -127,6 +153,7 @@ export function groupFilms(rows, { config, picks = {} }) {
         id,
         tmdbId: id,
         boxdId: null,
+        blurayUrl: null,
         title: readableTitle(title),
         year: parseNumber(r.annee),
         formats: [],
@@ -142,6 +169,17 @@ export function groupFilms(rows, { config, picks = {} }) {
       byId.set(id, f);
     }
     f.boxdId ??= /^[A-Za-z0-9]{3,6}$/.test(r.boxd_id ?? '') ? r.boxd_id : null;
+    // the link of the box set when the copy is in one (even if another copy of the film is not), else of the edition
+    const box = boxKey(r.type_ou_coffret);
+    if (boxLinks.has(box)) {
+      usedBoxes.add(box);
+      if (!boxed.has(id)) {
+        boxed.add(id);
+        f.blurayUrl = boxLinks.get(box);
+      }
+    } else if (!boxed.has(id)) {
+      f.blurayUrl ??= blurayLink(links.get(eanKey(r.ean)));
+    }
     f.year ??= parseNumber(r.annee);
     f.formats = FORMAT_ORDER.filter((x) => f.formats.includes(x) || formats.includes(x));
     f.hdr ??= parseHdr(r.hdr);
@@ -155,6 +193,10 @@ export function groupFilms(rows, { config, picks = {} }) {
     const note = parseNumber(r['note T']);
     if (note != null) f.rating = Math.max(f.rating ?? 0, note);
   }
+
+  skipped.unmatchedBoxes = [...boxLinks.keys()]
+    .filter((n) => !usedBoxes.has(n))
+    .map((n) => boxTitles.get(n));
 
   // a film none of whose copies can be lent isn't shown at all
   const films = [...byId.values()].filter((f) => f.lendable);
@@ -285,6 +327,93 @@ export function languageFlags(iconset, codes, fallback = {}) {
     const h = icon.height ?? iconset.height ?? 16;
     out[code] =
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${icon.left ?? 0} ${icon.top ?? 0} ${w} ${h}">${icon.body}</svg>`;
+  }
+  return out;
+}
+
+// ---- links inside cells ------------------------------------------------------------------------------------------
+// The CSV export only has what a cell displays. The XLSX export keeps the links, so the EAN column's blu-ray.com links
+// (one per edition) are read from it: a ZIP of XML files, read here with node:zlib alone (no extra dependency).
+
+/** The files of a ZIP archive: { name: Buffer }, read from its central directory (deflate or stored). */
+export function unzip(buf) {
+  let end = buf.length - 22;
+  while (end >= 0 && buf.readUInt32LE(end) !== 0x06054b50) end--; // end of central directory
+  if (end < 0) throw new Error('not a ZIP file');
+  const files = {};
+  let p = buf.readUInt32LE(end + 16);
+  for (let n = buf.readUInt16LE(end + 10); n > 0; n--) {
+    const method = buf.readUInt16LE(p + 10);
+    const size = buf.readUInt32LE(p + 20);
+    const nameLen = buf.readUInt16LE(p + 28);
+    const extraLen = buf.readUInt16LE(p + 30);
+    const commentLen = buf.readUInt16LE(p + 32);
+    const local = buf.readUInt32LE(p + 42);
+    const name = buf.toString('utf8', p + 46, p + 46 + nameLen);
+    const data = local + 30 + buf.readUInt16LE(local + 26) + buf.readUInt16LE(local + 28);
+    const raw = buf.subarray(data, data + size);
+    files[name] = method === 8 ? inflateRawSync(raw) : raw;
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return files;
+}
+
+const xmlText = (s) =>
+  s
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&');
+const attr = (tag, name) => xmlText(tag.match(new RegExp(`(?:^|\\s)${name}="([^"]*)"`))?.[1] ?? '');
+/** Digits only, so an EAN reads the same as a number, a string or with spaces. */
+export const eanKey = (s) => String(s ?? '').replace(/\D/g, '');
+
+/**
+ * { ean -> link } for the cells of the `ean` column that carry a link, in the first tab of an XLSX file
+ * (the first link wins when an EAN appears twice).
+ */
+export function eanLinks(xlsx, column = 'ean') {
+  const files = unzip(xlsx);
+  const read = (name) => (files[name] ? files[name].toString('utf8') : '');
+  const rid = read('xl/workbook.xml').match(/<sheet\b[^>]*>/)?.[0];
+  const rels = (xml) =>
+    new Map(
+      [...xml.matchAll(/<Relationship\b[^>]*>/g)].map((m) => [
+        attr(m[0], 'Id'),
+        attr(m[0], 'Target')
+      ])
+    );
+  const target = rels(read('xl/_rels/workbook.xml.rels')).get(attr(rid ?? '', 'r:id'));
+  if (!target) return new Map();
+  const sheetName = target.split('/').pop();
+  const sheet = read(`xl/worksheets/${sheetName}`);
+  const links = rels(read(`xl/worksheets/_rels/${sheetName}.rels`));
+  const strings = [...read('xl/sharedStrings.xml').matchAll(/<si>([\s\S]*?)<\/si>/g)].map((m) =>
+    xmlText([...m[1].matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map((t) => t[1]).join(''))
+  );
+
+  // the column holding the EAN, from the header row, and each of its cells' value
+  let col = null;
+  const value = new Map(); // row number -> cell text
+  for (const m of sheet.matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+    const [, letters, row] = attr(m[1], 'r').match(/^([A-Z]+)(\d+)$/) ?? [];
+    if (!letters) continue;
+    const v =
+      m[2]?.match(/<v>([\s\S]*?)<\/v>/)?.[1] ?? m[2]?.match(/<t\b[^>]*>([\s\S]*?)<\/t>/)?.[1];
+    if (v == null) continue;
+    const text = attr(m[1], 't') === 's' ? strings[+v] : xmlText(v);
+    if (row === '1') {
+      if (text.trim().toLowerCase() === column) col = letters;
+    } else if (letters === col) value.set(+row, text);
+  }
+
+  const out = new Map();
+  for (const m of sheet.matchAll(/<hyperlink\b[^>]*>/g)) {
+    const [, letters, row] = attr(m[0], 'ref').match(/^([A-Z]+)(\d+)$/) ?? [];
+    const url = links.get(attr(m[0], 'r:id'));
+    const key = eanKey(value.get(+row));
+    if (letters === col && url && key && !out.has(key)) out.set(key, url);
   }
   return out;
 }

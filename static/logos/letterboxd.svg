@@ -2,33 +2,37 @@
 <svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 150 50">
   <!-- Generator: Adobe Illustrator 30.4.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 226)  -->
   <defs>
-    <mask id="mask" x="92.45" y="0" width="50.075" height="50.515" maskUnits="userSpaceOnUse">
-      <g id="mask-2">
-        <rect id="path-1" x="96.134" width="46.392" height="50.515" fill="#fff"/>
+    <mask id="mask" x="89.658" y="4" width="42.064" height="42.433" maskUnits="userSpaceOnUse">
+      <g id="mask1" data-name="mask">
+        <g id="mask-2">
+          <rect id="path-1" x="92.753" y="4" width="38.969" height="42.433" fill="#fff"/>
+        </g>
       </g>
     </mask>
-    <mask id="mask-1" x="7.474" y="0" width="50.075" height="50.515" maskUnits="userSpaceOnUse">
-      <g id="mask-4">
-        <rect id="path-3" x="7.474" width="46.392" height="50.515" fill="#fff"/>
+    <mask id="mask-1" x="18.278" y="4" width="42.064" height="42.433" maskUnits="userSpaceOnUse">
+      <g id="mask-11" data-name="mask-1">
+        <g id="mask-4">
+          <rect id="path-3" x="18.278" y="4" width="38.969" height="42.433" fill="#fff"/>
+        </g>
       </g>
     </mask>
   </defs>
   <g id="letterboxd-decal-dots-neg-rgb">
     <g id="dots-pos">
       <g id="Dots">
-        <ellipse id="Green" cx="75" cy="25" rx="25.038" ry="25" fill="#00e054"/>
+        <ellipse id="Green" cx="75" cy="25" rx="21.032" ry="21" fill="#00e054"/>
         <g id="Blue">
           <g mask="url(#mask)">
-            <ellipse cx="117.488" cy="25" rx="25.038" ry="25" fill="#40bcf4"/>
+            <ellipse cx="110.69" cy="25" rx="21.032" ry="21" fill="#40bcf4"/>
           </g>
         </g>
         <g id="Orange">
           <g mask="url(#mask-1)">
-            <ellipse cx="32.512" cy="25" rx="25.038" ry="25" fill="#ff8000"/>
+            <ellipse cx="39.31" cy="25" rx="21.032" ry="21" fill="#ff8000"/>
           </g>
         </g>
-        <path id="Overlap" d="M53.756,38.237c-2.404-3.839-3.794-8.376-3.794-13.237s1.39-9.398,3.794-13.237c2.404,3.839,3.794,8.376,3.794,13.237s-1.39,9.398-3.794,13.237Z" fill="#567" fill-rule="evenodd"/>
-        <path id="Overlap1" data-name="Overlap" d="M96.244,11.763c2.404,3.839,3.794,8.376,3.794,13.237s-1.39,9.398-3.794,13.237c-2.404-3.839-3.794-8.376-3.794-13.237s1.39-9.398,3.794-13.237Z" fill="#567" fill-rule="evenodd"/>
+        <path id="Overlap" d="M57.155,36.119c-2.019-3.225-3.187-7.036-3.187-11.119s1.168-7.894,3.187-11.119c2.019,3.225,3.187,7.036,3.187,11.119s-1.168,7.894-3.187,11.119Z" fill="#567" fill-rule="evenodd"/>
+        <path id="Overlap1" d="M92.845,13.881c2.019,3.225,3.187,7.036,3.187,11.119s-1.168,7.894-3.187,11.119c-2.019-3.225-3.187-7.036-3.187-11.119s1.168-7.894,3.187-11.119Z" fill="#567" fill-rule="evenodd"/>
       </g>
     </g>
   </g>

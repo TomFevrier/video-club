@@ -20,7 +20,7 @@ import {
   buildSagas,
   languageFlags
 } from './lib.mjs';
-import { loadDotEnv, readSheet } from './sheet.mjs';
+import { loadDotEnv, readSheet, readSheetLinks } from './sheet.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = process.env.OUT_FILE ?? path.join(root, 'src/lib/data/movies.json');
@@ -190,6 +190,7 @@ function assemble(sheetFilms) {
         id: f.id,
         tmdbId: f.id,
         boxdId: f.boxdId,
+        blurayUrl: f.blurayUrl,
         titles: { en: titleEn, fr: titleFr },
         // the sheet's own title, kept for searching when it differs from both
         alt: [titleEn, titleFr].includes(f.title) ? null : f.title,
@@ -229,10 +230,15 @@ async function main() {
   const rows = parseCsv(await readSheet(root, log));
   const pf = path.join(root, 'data/picks.json');
   const picks = fs.existsSync(pf) ? JSON.parse(fs.readFileSync(pf, 'utf8')) : {};
-  const { films: sheetFilms, skipped } = groupFilms(rows, { config, picks });
+  const links = await readSheetLinks(log);
+  const { films: sheetFilms, skipped } = groupFilms(rows, { config, picks, links });
   log(
     `${rows.length} rows -> ${sheetFilms.length} films (skipped: ${skipped.excluded} not in the collection, ${skipped.boxes} box sets, ${skipped.unlendable} not lendable, ${skipped.unmatched.length} without a TMDb id)`
   );
+  if (skipped.unmatchedBoxes.length)
+    log(
+      `${skipped.unmatchedBoxes.length} box sets no film points to by name (type_ou_coffret), so no box link`
+    );
   if (skipped.unmatched.length)
     log(
       '  no TMDb id:',
