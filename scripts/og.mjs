@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Draws the social preview image (1200x630 layout, rendered at 2400x1260), one per language, at build time:
-//   static/og/og-<lang>-<hash>.jpg   (the hash changes with the content, so social networks fetch the new one)
+//   static/og/og-<lang>.jpg   (always the same name; the page links it with ?v=<hash>, so social networks fetch a changed image)
 //   src/lib/data/og.json             (file names and alt texts, read by Catalogue.svelte for the <meta> tags)
 //
 // A bookcase of three shelves beside the title. The cases facing out are the films listed in config.json → og.faces
@@ -513,12 +513,29 @@ async function main() {
   const out = { width: W * SCALE, height: H * SCALE, siteUrl: site };
   for (const lang of LANGS) {
     const { image, faces } = await render(lang, chosen, opts);
-    const name = `og-${lang}-${crypto.createHash('sha1').update(image).digest('hex').slice(0, 10)}.jpg`;
+    const hash = crypto.createHash('sha1').update(image).digest('hex').slice(0, 10);
+    const name = `og-${lang}.jpg`;
     fs.writeFileSync(path.join(OUT_DIR, name), image);
-    out[lang] = { file: `og/${name}`, alt: TEXT[lang].alt(faces.map((f) => f.title).join(', ')) };
+    archive(lang, hash);
+    out[lang] = {
+      file: `og/${name}?v=${hash}`,
+      alt: TEXT[lang].alt(faces.map((f) => f.title).join(', '))
+    };
     log(`${lang}: static/og/${name} (${(image.length / 1024).toFixed(0)} KB)`);
   }
   fs.writeFileSync(OUT_JSON, JSON.stringify(out));
+}
+
+// The image is always served at the same address (og-<lang>.jpg), so a link preview that was cached never breaks;
+// ?v=<hash> in the URL still makes social networks fetch a new image when it changes. Every version is kept in .cache
+// (not deployed), under its hash.
+const ARCHIVE = path.join(root, '.cache/og-archive');
+function archive(lang, hash) {
+  fs.mkdirSync(ARCHIVE, { recursive: true });
+  fs.copyFileSync(
+    path.join(OUT_DIR, `og-${lang}.jpg`),
+    path.join(ARCHIVE, `og-${lang}-${hash}.jpg`)
+  );
 }
 
 try {
