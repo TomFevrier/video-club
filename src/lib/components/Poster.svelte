@@ -4,7 +4,7 @@
   let failed = $state(null); // the path that failed to load (switching language may bring a working one)
   const title = $derived(app.title(film));
   // the poster in the page's language (English and French films keep their original one)
-  const path = $derived(film.posters?.[app.lang] ?? film.posters?.en);
+  const path = $derived(app.poster(film));
   const hue = $derived([...film.titles.en].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7));
   const bg = $derived(
     `linear-gradient(160deg, hsl(${(hue % 40) + 345} 55% 28%), hsl(${220 + (hue % 30)} 50% 18%))`

@@ -13,6 +13,7 @@
   import Poster from './Poster.svelte';
   import Logo from './Logo.svelte';
   import Flag from './Flag.svelte';
+  import PosterPicker from './PosterPicker.svelte';
   import { app } from '$lib/state.svelte.js';
 
   const m = $derived(app.detail);
@@ -66,6 +67,7 @@
 
       <div class="poster-col">
         <Poster film={m} size="w342" />
+        {#if import.meta.env.DEV}<PosterPicker film={m} />{/if}
       </div>
 
       <div class="head">
@@ -259,8 +261,7 @@
   }
   .poster-col {
     grid-area: poster;
-    position: relative;
-    align-self: start;
+    align-self: start; /* not positioned: the dev poster picker's panel then fills the whole dialog */
   }
   /* Letterboxd, TMDb and blu-ray.com: below the details, above the borrow button */
   .links {

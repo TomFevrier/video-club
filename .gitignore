@@ -9,6 +9,8 @@ data/blu-rays.csv
 # generated from the sheet + TMDb
 src/lib/data/movies.json
 src/lib/data/flags.json
+# every TMDb poster of each film, for the picker of the dev server
+src/lib/data/poster-choices.json
 # blu-ray.com matches (npm run bluray): run by hand, kept local
 data/bluray.json
 # link-preview images, drawn from the data at build time

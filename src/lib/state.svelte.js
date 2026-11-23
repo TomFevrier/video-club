@@ -175,6 +175,8 @@ class App {
   // borrow list (ids), the open film, the list panel, a short message, the film flashed by "surprise me"
   selection = $state([]);
   detail = $state(null);
+  // dev server only: the posters picked in the popup (TMDb id -> { en?, fr? }), shown before the next sync
+  posterPicks = $state({});
   trayOpen = $state(false);
   toast = $state('');
   highlight = $state(null);
@@ -183,6 +185,20 @@ class App {
   get fmt() {
     return makeFormats(this.lang);
   }
+  /** The poster file of a film in the page's language (English and French films keep their original one). */
+  poster = (m) => this.posterPicks[m.id]?.[this.lang] ?? m.posters?.[this.lang] ?? m.posters?.en;
+
+  /** Dev server only: save a poster choice for the page's language (null = back to the automatic one). */
+  async pickPoster(m, path, fallback) {
+    const res = await fetch('/__posters', {
+      method: 'POST',
+      body: JSON.stringify({ id: m.id, lang: this.lang, path })
+    });
+    if (!res.ok) throw new Error((await res.json()).error);
+    this.posterPicks = { ...(await res.json()) };
+    if (!path) this.posterPicks[m.id] = { ...this.posterPicks[m.id], [this.lang]: fallback };
+  }
+
   /** Title in the page's language, with typographic apostrophes. */
   title = (m) => (m.titles[this.lang] ?? m.titles.en).replace(/'/g, '’');
   formatName = (f) => this.t(`format.${f}`);
@@ -340,6 +356,11 @@ class App {
     } catch {
       this.selection = [];
     }
+    if (import.meta.env.DEV)
+      fetch('/__posters')
+        .then((r) => r.json())
+        .then((picks) => (this.posterPicks = picks))
+        .catch(() => {}); // not served by the dev server: the posters of the last sync stay
   }
 }
 

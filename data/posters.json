@@ -1,0 +1,61 @@
+{
+  "147": {
+    "fr": "/mOO5hgcqK84sFIQ262UvppYpLnj.jpg"
+  },
+  "255": {
+    "fr": "/kBJIKilM1xmoe3wbeoHd4dn8cVc.jpg"
+  },
+  "256": {
+    "fr": "/qXyuif4nkYwnUu5QtCiJgJqR1xt.jpg"
+  },
+  "259": {
+    "fr": "/450uSM8uq3mQwZxh944GAlEtq4h.jpg"
+  },
+  "670": {
+    "fr": "/pWDtjs568ZfOTMbURQBYuT4Qxka.jpg"
+  },
+  "1802": {
+    "en": "/nMbhZN6dCQhHN3pilNiYDasRT3n.jpg"
+  },
+  "4024": {
+    "fr": "/lGHdgjIStcbm78tiwU7Vh45yPhP.jpg"
+  },
+  "8764": {
+    "en": "/lWkrc7Nckxd3Ny33LlRUifgKAt.jpg"
+  },
+  "9075": {
+    "fr": "/fKBeM6vjMD79G3wAXSpw3pBHsit.jpg"
+  },
+  "10068": {
+    "fr": "/opwSTmj5ZjriSxiicZbgeWnEWen.jpg"
+  },
+  "10305": {
+    "en": "/ydhpmHQp6VRZ0GjxHGcPR2pKE6M.jpg"
+  },
+  "10997": {
+    "fr": "/nJNOxUCXa6tuXAhjASQTYhbv0pq.jpg"
+  },
+  "11782": {
+    "fr": "/eB5Ed8AmpIs0MQcaj6GplSwUShT.jpg"
+  },
+  "27072": {
+    "en": "/3riXSae6nCHooGGiTmDKotFukxm.jpg"
+  },
+  "29266": {
+    "fr": "/6pJaqWKr9uDEiMCvNfiiZ22cSa2.jpg"
+  },
+  "217923": {
+    "en": "/wsnioYKR2C2FlAYZxZTzihW2TVh.jpg"
+  },
+  "283701": {
+    "fr": "/o0jDFidDO0nO2OvQKBlYRads43S.jpg"
+  },
+  "587986": {
+    "en": "/gyxNIAnDZq9f54Up05gDT6ra117.jpg"
+  },
+  "762504": {
+    "en": "/xhH1eOWVgj8VkaX4Wougd7zYqCp.jpg",
+    "fr": "/xhH1eOWVgj8VkaX4Wougd7zYqCp.jpg"
+  },
+  "_": "Posters picked by hand in the popup (dev mode only: pnpm dev). TMDb id -> the file path of the poster per page language. They win over the automatic pick when the site is built. Delete an entry to go back to the default."
+}

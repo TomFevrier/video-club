@@ -168,6 +168,10 @@ async function enrichCollections(films) {
 
 // ---- 2. put it together -----------------------------------------------------------------------------------------
 
+/** Posters chosen by hand in dev mode (data/posters.json): TMDb id -> { en?, fr? }. They win over the automatic pick. */
+const POSTERS_FILE = path.join(root, 'data/posters.json');
+const chosen = fs.existsSync(POSTERS_FILE) ? JSON.parse(fs.readFileSync(POSTERS_FILE, 'utf8')) : {};
+
 /** The poster of a cached film for a page language (null when TMDb has none). */
 const poster = (m, lang) =>
   m
@@ -206,11 +210,38 @@ function assemble(sheetFilms) {
         plex: f.plex,
         distributors: f.distributors,
         tier: f.tier,
-        posters: { en: poster(m, 'en'), fr: poster(m, 'fr') }, // per page language
+        // per page language
+        posters: {
+          en: chosen[f.id]?.en ?? poster(m, 'en'),
+          fr: chosen[f.id]?.fr ?? poster(m, 'fr')
+        },
         collection: m?.collection ?? null
       };
     })
     .sort((a, b) => a.titles.en.localeCompare(b.titles.en, 'en', { sensitivity: 'base' }));
+}
+
+/**
+ * Every poster TMDb has for each film, for the picker of the dev server (never shipped to visitors):
+ * TMDb id -> { default: { en, fr }, list: [{ path, lang }] }, best rated first.
+ */
+function writePosterChoices(sheetFilms) {
+  const out = {};
+  for (const f of sheetFilms) {
+    const m = cache.movies[f.id];
+    if (!m || m.missing) continue;
+    const list = [...(m.posters ?? [])]
+      .sort(
+        (a, b) =>
+          (b.vote_average ?? 0) - (a.vote_average ?? 0) || (b.vote_count ?? 0) - (a.vote_count ?? 0)
+      )
+      .map((p) => ({ path: p.file_path, lang: p.iso_639_1 }));
+    const first = { en: poster(m, 'en'), fr: poster(m, 'fr') };
+    for (const p of [first.en, first.fr])
+      if (p && !list.some((x) => x.path === p)) list.unshift({ path: p, lang: null });
+    out[f.id] = { default: first, list };
+  }
+  fs.writeFileSync(path.join(path.dirname(OUT), 'poster-choices.json'), JSON.stringify(out));
 }
 
 /** Countries' flags for the languages the circle-flags set has no flag for. */
@@ -284,6 +315,7 @@ async function main() {
     })
   );
   writeFlags(films);
+  writePosterChoices(sheetFilms);
 }
 
 main().catch((e) => {
